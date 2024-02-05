@@ -21,6 +21,6 @@ MonoBehaviour:
   torsoProba: 0.95
   legsProba: 0.85
   actionPointMax: 2
-  speedToNextCell: 5
+  speedToNextCell: 3
   damages: 50
   probaHit: 100
