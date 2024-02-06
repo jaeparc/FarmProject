@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ff7680e42a1c49a4cba9d30a26a7dd64, type: 3}
+  m_Name: stats_Scavenger
+  m_EditorClassIdentifier: 
+  className: Scavenger
+  HP: 100
+  actionPoints: 5
+  damages: 50
+  range: 4
+  ammo: 5

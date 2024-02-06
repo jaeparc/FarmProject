@@ -15,13 +15,11 @@ public class playerMovementScript : MonoBehaviour
     bool movementMode = false;
     int indexPath = 1;
     bool doneBFS = false;
-    [SerializeField] float speedToNextCell;
-    [Header("--------------BFS--------------")]
-    [SerializeField] GameObject indicator;
-    [SerializeField] int rangeDepla;
     public BFS BreathFirstSearch;
     public List<Node> path = new List<Node>();
+    [SerializeField] float speedToNextCell;
     [Header("--------------OBJETS A REMPLIR--------------")]
+    [SerializeField] GameObject indicator;
     [SerializeField] Transform spawnPoint;
     public actionChoiceUI_script bubblesActionChoice;
 
@@ -42,6 +40,9 @@ public class playerMovementScript : MonoBehaviour
     void InitVar(){
         BreathFirstSearch = new BFS(new Vector3Int(-4,-4,0), new Vector3Int(3,3,0), Grille);
         baseColorIndicator = indicator.GetComponent<SpriteRenderer>().color;
+        for(int i = 0; i < GameObject.FindGameObjectsWithTag("Enemy").Length; i++){
+            GameObject.FindGameObjectsWithTag("Enemy")[i].GetComponent<zombieScript>().unwalkableCell();
+        }
     }
 
     void Spawn(){
@@ -111,7 +112,7 @@ public class playerMovementScript : MonoBehaviour
                 }
                 if(Input.GetMouseButtonDown(0)){
                     changeColorPathIndicator(hitInfo.transform.gameObject,Color.green);
-                    bubblesActionChoice.actualActionPoint -= path.Count-1;
+                    GetComponent<attackScript>().actualActionPoint -= path.Count-1;
                     GetComponent<attackScript>().HUD.refreshAP();
                     targetActive = true;
                 }
@@ -167,12 +168,7 @@ public class playerMovementScript : MonoBehaviour
     }
 
     void displayBFSNV(Node nodeOrigin){
-        int realRange;
-        if(bubblesActionChoice.actualActionPoint >= rangeDepla)
-            realRange = rangeDepla;
-        else
-            realRange = Mathf.RoundToInt(bubblesActionChoice.actualActionPoint);
-        BreathFirstSearch.startBfs(nodeOrigin, realRange);
+        BreathFirstSearch.startBfs(nodeOrigin, Mathf.RoundToInt(GetComponent<attackScript>().actualActionPoint));
         for(int i = 0; i < BreathFirstSearch.NV.Count; i++){
             if((BreathFirstSearch.NV[i].indicator == null || BreathFirstSearch.NV[i] != nodeOrigin) && !BreathFirstSearch.NV[i].IsOccupied)
                 BreathFirstSearch.NV[i].indicator = Instantiate(indicator,Grille.CellToWorld(BreathFirstSearch.NV[i].coord)+new Vector3(0.5f,0.05f,0.5f),Quaternion.Euler(90,0,0));

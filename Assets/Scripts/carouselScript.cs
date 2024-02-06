@@ -22,6 +22,8 @@ public class carouselScript : MonoBehaviour
     List<float> angles = new List<float>();
     List<Vector3> positions = new List<Vector3>();
     List<GameObject> objectsInstances = new List<GameObject>();
+    GameObject objectSelected = null;
+    GameObject objectTargeted = null;
 
     // Start is called before the first frame update
     void Start()
@@ -61,6 +63,7 @@ public class carouselScript : MonoBehaviour
     }
 
     void Controls(){
+        Pointer();
         if(Input.GetKey(KeyCode.RightArrow)){
             moving = true;
             direction = "right";
@@ -74,16 +77,31 @@ public class carouselScript : MonoBehaviour
         }
     }
 
-    void Select(){
-        GameObject gameObjectSelected = null;
-        float closestDistance = Mathf.Infinity;
-        foreach(GameObject objects in objectsInstances){
-            if(Vector3.Distance(cameraTransform.position,objects.transform.position) < closestDistance){
-                gameObjectSelected = objects;
-                closestDistance = Vector3.Distance(cameraTransform.position,objects.transform.position);
-            }
+    void Pointer(){
+        Vector3 screenPos = Input.mousePosition;
+        Ray ray = cameraTransform.GetComponent<Camera>().ScreenPointToRay(screenPos);
+        RaycastHit hitInfo; 
+
+        if (Physics.Raycast(ray, out hitInfo, Mathf.Infinity)){
+            if(objectsInstances.Contains(hitInfo.transform.gameObject) && hitInfo.transform.gameObject != objectSelected && Input.GetMouseButtonUp(0)){
+                objectTargeted = hitInfo.transform.gameObject;
+                moving = true;
+                if(screenPos.x > Screen.width/2)
+                    direction = "right";
+                else
+                    direction = "left";
+            } else if(objectsInstances.Contains(hitInfo.transform.gameObject) && hitInfo.transform.gameObject == objectSelected && !moving && Input.GetMouseButtonUp(0))
+                Select();
         }
-        switch(gameObjectSelected.name){
+
+        if(objectTargeted != null)
+            moving = true;
+    }
+
+    void Select(){
+        if(objectSelected == null)
+            findClosestObject();
+        switch(objectSelected.name){
             case "Continue":
                 transform.parent.gameObject.SetActive(false);
                 break;
@@ -93,18 +111,12 @@ public class carouselScript : MonoBehaviour
     }
 
     void Rotation(){
+        if(objectSelected == null)
+            findClosestObject();
         if(!moving){
             float realSpeed = speedRotation*Time.deltaTime; 
-            GameObject gameObjectToRotate = null;
-            float closestDistance = Mathf.Infinity;
-            foreach(GameObject objects in objectsInstances){
-                if(Vector3.Distance(cameraTransform.position,objects.transform.position) < closestDistance){
-                    gameObjectToRotate = objects;
-                    closestDistance = Vector3.Distance(cameraTransform.position,objects.transform.position);
-                }
-            }
-            gameObjectToRotate.transform.Rotate(new Vector3(0,realSpeed,0));
-            nameObjects.text = gameObjectToRotate.name;
+            objectSelected.transform.Rotate(new Vector3(0,realSpeed,0));
+            nameObjects.text = objectSelected.name;
         }
     }
 
@@ -150,9 +162,8 @@ public class carouselScript : MonoBehaviour
                     else
                         targetPosition = positions[i-1];
                 }
-                Debug.Log(objectsInstances[i].transform.position+" "+targetPosition);
                 //Debug.Log("POSITION:"+objectsInstances[i].transform.position+";TARGET:"+targetPosition+";DISTANCE:"+Vector3.Distance(objectsInstances[i].transform.position,targetPosition));
-                if(Vector3.Distance(objectsInstances[i].transform.position,targetPosition) < 0.1f){
+                if(Vector3.Distance(objectsInstances[i].transform.position,targetPosition) < 0.05f){
                     endMove();
                     break;
                 }
@@ -178,7 +189,21 @@ public class carouselScript : MonoBehaviour
         }
         moving = false;
         positionsSet = false;
-        direction = "";
         positions.Clear();
+        findClosestObject();
+        if(objectTargeted != null && objectSelected == objectTargeted){
+            objectTargeted = null;
+            direction = "";
+        }
+    }
+    
+    void findClosestObject(){
+        float closestDistance = Mathf.Infinity;
+        foreach(GameObject objects in objectsInstances){
+            if(Vector3.Distance(cameraTransform.position,objects.transform.position) < closestDistance){
+                objectSelected = objects;
+                closestDistance = Vector3.Distance(cameraTransform.position,objects.transform.position);
+            }
+        }
     }
 }

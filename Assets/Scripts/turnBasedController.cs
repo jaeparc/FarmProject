@@ -7,8 +7,8 @@ public class turnBasedController : MonoBehaviour
 {
     private GameObject player;
     private int indexEnemyTurn;
-    [SerializeField] List<GameObject> enemies = new List<GameObject>();
-    public bool playersTurn = true;
+    List<GameObject> enemies = new List<GameObject>();
+    bool playersTurn = true;
 
     void Start()
     {
@@ -23,23 +23,36 @@ public class turnBasedController : MonoBehaviour
 
     public void nextTurn(){
         actionChoiceUI_script UIplayer = player.GetComponent<playerMovementScript>().bubblesActionChoice;
+        attackScript attackPlayer = player.GetComponent<attackScript>();
         playersTurn = !playersTurn;
 
         if(!playersTurn){
-            player.GetComponent<attackScript>().VATS.closeInterface();
+            attackPlayer.VATS.closeInterface();
             UIplayer.changeActivatedMode(3);
             indexEnemyTurn = 0;
             zombieTurn();
         } else {
-            GameObject.FindWithTag("Player").GetComponent<attackScript>().HUD.NextButton.SetActive(true);
-            UIplayer.actualActionPoint = UIplayer.actionPointMax;
+            attackPlayer.HUD.NextButton.SetActive(true);
+            attackPlayer.actualActionPoint = attackPlayer.actionPointMax;
             UIplayer.changeActivatedMode(0);
         }
     }
 
     public void zombieTurn(){
-        enemies[indexEnemyTurn].GetComponent<zombieScript>().actualActionPoint = enemies[indexEnemyTurn].GetComponent<zombieScript>().Stats.actionPointMax;
-        enemies[indexEnemyTurn].GetComponent<zombieScript>().turnAction();
+        bool enemiesStillExist = false;
+        foreach(GameObject enemy in enemies){
+            if(enemy != null)
+                enemiesStillExist = true;
+        }
+        if(enemiesStillExist){
+            enemies[indexEnemyTurn].GetComponent<zombieScript>().actualActionPoint = enemies[indexEnemyTurn].GetComponent<zombieScript>().Stats.actionPointMax;
+            enemies[indexEnemyTurn].GetComponent<zombieScript>().turnAction();
+        } else 
+            endGame();
+    }
+
+    public void endGame(){
+
     }
 
     public void nextZombieTurn(){

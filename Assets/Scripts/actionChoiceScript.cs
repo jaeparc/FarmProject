@@ -7,15 +7,46 @@ using UnityEngine;
 public class actionChoiceUI_script : MonoBehaviour
 {
     public int activatedMode = 0; //0 pour aucun; 1 pour deplacement; 2 pour tir; 3 pour rechargement;
-    public float actionPointMax;
-    public GameObject boutonsChoix;
+    [SerializeField] GameObject[] classesChoix;
     public GameObject boutonRetour;
     public TextMeshProUGUI message;
     public TextMeshProUGUI hit;
-    [HideInInspector] public float actualActionPoint;
+    GameObject boutonsChoix;
 
     void Start(){
-        actualActionPoint = actionPointMax;
+        InitVar();
+    }
+
+    void InitVar(){
+        GameObject Player = GameObject.FindWithTag("Player");
+
+        switch(Player.GetComponent<attackScript>().Stats.className){
+            case "Hunter":
+                for(int i = 0; i < classesChoix.Length; i++){
+                    if(classesChoix[i].name.Contains("Chasseur") || classesChoix[i].name.Contains("Hunter"))
+                        boutonsChoix = classesChoix[i];
+                    else
+                        classesChoix[i].SetActive(false);
+                }
+                break;
+            case "Scavenger":
+                for(int i = 0; i < classesChoix.Length; i++){
+                    if(classesChoix[i].name.Contains("Pillard") || classesChoix[i].name.Contains("Scavenger")){
+                        boutonsChoix = classesChoix[i];
+                    }else
+                        classesChoix[i].SetActive(false);
+                }
+                break;
+            case "Marksman":
+                for(int i = 0; i < classesChoix.Length; i++){
+                    if(classesChoix[i].name.Contains("Sniper") || classesChoix[i].name.Contains("Marksman"))
+                        boutonsChoix = classesChoix[i];
+                    else
+                        classesChoix[i].SetActive(false);
+                }
+                break;
+        }
+        boutonsChoix.SetActive(true);
     }
 
     public void changeActivatedMode(int idMode){

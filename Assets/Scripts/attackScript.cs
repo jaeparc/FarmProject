@@ -7,27 +7,43 @@ using UnityEngine;
 
 public class attackScript : MonoBehaviour
 {
-    [SerializeField] int valueAttack;
-    [SerializeField] int rangeOfAttack;
+    
+    ////////////////INSPECTEUR
     [SerializeField] int costOfAttack;
     [SerializeField] int costOfReload;
-    public int ammoMax;
-    public float HPmax;
+    [Header("--------------OBJETS A REMPLIR--------------")]
     public VATS_script VATS;
     public HUDscript HUD;
+    public stats_ClassPlayer Stats;
+
+    ////////////////NON VISIBLE
     [HideInInspector] public GameObject enemyAimed;
+    int valueAttack;
+    int rangeOfAttack;
+    int ammoMax;
+    [HideInInspector] public float HPmax;
+    [HideInInspector] public float actionPointMax;
     [HideInInspector] public int ammoLeft;
-    public float HPleft;
+    [HideInInspector] public float HPleft;
+    [HideInInspector] public float actualActionPoint;
     private actionChoiceUI_script UIplayer;
 
-    void Start(){
+    void Awake(){
         InitVar();
     }
 
     void InitVar(){
+        valueAttack = Stats.damages;
+        rangeOfAttack = Stats.range;
+        ammoMax = Stats.ammo;
+        HPmax = Stats.HP;
+        actionPointMax = Stats.actionPoints;
+        GetComponent<Animator>().runtimeAnimatorController = Stats.animator;
+
         ammoLeft = ammoMax;
         HPleft = HPmax;
         UIplayer = GetComponent<playerMovementScript>().bubblesActionChoice;
+        actualActionPoint = actionPointMax;
     }
 
     public void aim(GameObject enemyToAttack){
@@ -37,8 +53,7 @@ public class attackScript : MonoBehaviour
     }
 
     public void attack(string part){
-        float actionPoint = UIplayer.actualActionPoint;
-        if(ammoLeft > 0 && actionPoint - costOfAttack >= 0){
+        if((ammoLeft > 0 || Stats.className == "Scavenger") && actualActionPoint - costOfAttack >= 0){
             float probaHit = getProba()*enemyAimed.GetComponent<zombieScript>().getProbaPart(part);
             float coefDamage;
             if(UnityEngine.Random.Range(0f,100f) < probaHit)
@@ -54,13 +69,13 @@ public class attackScript : MonoBehaviour
                 transform.GetChild(1).localScale = new Vector3(Mathf.Abs(transform.GetChild(1).localScale.x),transform.GetChild(1).localScale.y,transform.GetChild(1).localScale.z);
             }
             ammoLeft--;
-            UIplayer.actualActionPoint-=costOfAttack;
+            actualActionPoint-=costOfAttack;
             HUD.refreshAmmo();
             HUD.refreshAP();
             GetComponent<Animator>().SetTrigger("shoot");
-        } else if(ammoLeft <= 0){
+        } else if(ammoLeft <= 0 && Stats.className != "Scavenger"){
             UIplayer.messageAnimation("NO AMMO");
-        } else if(actionPoint - costOfAttack < 0)
+        } else if(actualActionPoint - costOfAttack < 0)
             UIplayer.messageAnimation("NOT ENOUGH AP");
         VATS.closeInterface();
     }
@@ -109,14 +124,13 @@ public class attackScript : MonoBehaviour
     }
 
     public void reload(){
-        float actionPoint = UIplayer.actualActionPoint;
-        if(ammoLeft < ammoMax && actionPoint - costOfReload >= 0){
+        if(ammoLeft < ammoMax && actualActionPoint - costOfReload >= 0){
             GetComponent<Animator>().SetTrigger("reload");
-            UIplayer.actualActionPoint-=costOfReload;
+            actualActionPoint-=costOfReload;
             HUD.refreshAP();
         }else if(ammoLeft >= ammoMax)
             UIplayer.messageAnimation("MAX AMMO");
-        else if(actionPoint - costOfReload < 0)
+        else if(actualActionPoint - costOfReload < 0)
             UIplayer.messageAnimation("NOT ENOUGH AP");
         UIplayer.changeActivatedMode(3);
     }

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using OpenCover.Framework.Model;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -9,8 +10,12 @@ public class HUDscript : MonoBehaviour
 {
     [SerializeField] Image LeftHealthBar;
     [SerializeField] Image RightHealthBar;
-    [SerializeField] GameObject Bullets;
-    [SerializeField] GameObject Batteries;
+    [SerializeField] GameObject[] ClassesBullets;
+    GameObject Bullets;
+    [SerializeField] GameObject[] ClassesBatteries;
+    GameObject Batteries;
+    [SerializeField] GameObject Magazine;
+    [SerializeField] GameObject Bat;
     public GameObject NextButton;
     [SerializeField] TextMeshProUGUI CostAP;
     GameObject Player;
@@ -21,20 +26,73 @@ public class HUDscript : MonoBehaviour
 
     void InitVar(){
         Player = GameObject.FindWithTag("Player");
+
+        switch(Player.GetComponent<attackScript>().Stats.className){
+            case "Hunter":
+                for(int i = 0; i < ClassesBatteries.Length; i++){
+                    if(ClassesBatteries[i].name.Contains("Chasseur") || ClassesBatteries[i].name.Contains("Hunter"))
+                        Batteries = ClassesBatteries[i];
+                    else
+                        ClassesBatteries[i].SetActive(false);
+                }
+                for(int i = 0; i < ClassesBullets.Length; i++){
+                    if(ClassesBullets[i].name.Contains("Chasseur") || ClassesBullets[i].name.Contains("Hunter"))
+                        Bullets = ClassesBullets[i];
+                    else
+                        ClassesBullets[i].SetActive(false);
+                }
+                Magazine.SetActive(true);
+                Bat.SetActive(false);
+                break;
+            case "Scavenger":
+                for(int i = 0; i < ClassesBatteries.Length; i++){
+                    if(ClassesBatteries[i].name.Contains("Pillard") || ClassesBatteries[i].name.Contains("Scavenger"))
+                        Batteries = ClassesBatteries[i];
+                    else
+                        ClassesBatteries[i].SetActive(false);
+                }
+                for(int i = 0; i < ClassesBullets.Length; i++)
+                    ClassesBullets[i].SetActive(false);
+                Bullets = null;
+                Magazine.SetActive(false);
+                Bat.SetActive(true);
+                break;
+            case "Marksman":
+                for(int i = 0; i < ClassesBatteries.Length; i++){
+                    if(ClassesBatteries[i].name.Contains("Sniper") || ClassesBatteries[i].name.Contains("Marksman"))
+                        Batteries = ClassesBatteries[i];
+                    else
+                        ClassesBatteries[i].SetActive(false);
+                }
+                for(int i = 0; i < ClassesBullets.Length; i++){
+                    if(ClassesBullets[i].name.Contains("Sniper") || ClassesBullets[i].name.Contains("Marksman"))
+                        Bullets = ClassesBullets[i];
+                    else
+                        ClassesBullets[i].SetActive(false);
+                }
+                Magazine.SetActive(true);
+                Bat.SetActive(false);
+                break;
+        }
+        Batteries.SetActive(true);
+        if(Bullets != null)
+            Bullets.SetActive(true);
     }
 
     public void refreshAmmo(){
-        for(int i = 0; i < Bullets.transform.childCount; i++){
-            if(i < Player.GetComponent<attackScript>().ammoLeft)
-                Bullets.transform.GetChild(i).gameObject.GetComponent<Image>().color = Color.white;
-            else
-                Bullets.transform.GetChild(i).gameObject.GetComponent<Image>().color = Color.black;
+        if(Player.GetComponent<attackScript>().Stats.ammo > 0){
+            for(int i = 0; i < Bullets.transform.childCount; i++){
+                if(i < Player.GetComponent<attackScript>().ammoLeft)
+                    Bullets.transform.GetChild(i).gameObject.GetComponent<Image>().color = Color.white;
+                else
+                    Bullets.transform.GetChild(i).gameObject.GetComponent<Image>().color = Color.black;
+            }
         }
     }
 
     public void refreshAP(){
         for(int i = 0; i < Batteries.transform.childCount; i++){
-            if(i < Player.GetComponent<playerMovementScript>().bubblesActionChoice.actualActionPoint)
+            if(i < Player.GetComponent<attackScript>().actualActionPoint)
                 Batteries.transform.GetChild(i).gameObject.GetComponent<Image>().color = Color.white;
             else
                 Batteries.transform.GetChild(i).gameObject.GetComponent<Image>().color = Color.black;
@@ -52,7 +110,6 @@ public class HUDscript : MonoBehaviour
 
     public void refreshHealth(){
         float coefHP =Player.GetComponent<attackScript>().HPleft/Player.GetComponent<attackScript>().HPmax;
-        //Debug.Log(coefHP);
         if(coefHP > 1-(1/9)){
             RightHealthBar.fillAmount = 1;
             LeftHealthBar.fillAmount = 1;

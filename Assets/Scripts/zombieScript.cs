@@ -66,7 +66,7 @@ public class zombieScript : MonoBehaviour
         transform.position = new Vector3(Grille.CellToWorld(cellPosition).x+0.5f,Grille.CellToWorld(cellPosition).y,Grille.CellToWorld(cellPosition).z+0.5f);
     }
 
-    void unwalkableCell(){
+    public void unwalkableCell(){
         Ray ray = new Ray(transform.position+new Vector3(0.1f,1,0.1f),Vector3.down);
         if(Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, 1 << LayerMask.NameToLayer("Sol")) && hit.transform.CompareTag("Walkable")){
             for(int i = 0; i < playerMoveScript.BreathFirstSearch.Noeuds.Count; i++){
